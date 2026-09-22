@@ -4,8 +4,8 @@ import Config
 #
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
-# Run `mix help test` for more information.
-config :time_manager, Todolist.Repo,
+
+config :time_manager, TimeManager.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
@@ -13,15 +13,14 @@ config :time_manager, Todolist.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
-# We don't run a server during test. If one is required,
-# you can enable the server option below.
-config :time_manager, TodolistWeb.Endpoint,
+# We don't run a server during test.
+config :time_manager, TimeManagerWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "7U5m5L5azX/yWj1LBNS6HKmLTPKi6SpoBGs8ro+puDv0OP0xIJ9bIBADLOaZqS90",
   server: false
 
 # In test we don't send emails
-config :time_manager, Todolist.Mailer, adapter: Swoosh.Adapters.Test
+config :time_manager, TimeManager.Mailer, adapter: Swoosh.Adapters.Test
 
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false

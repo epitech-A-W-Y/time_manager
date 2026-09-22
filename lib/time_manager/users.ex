@@ -1,53 +1,33 @@
-defmodule Todolist.Users do
-  @moduledoc """
-  The Users context.
-  """
-
+defmodule TimeManager.Users do
   import Ecto.Query, warn: false
-  alias Todolist.Repo
-  alias Todolist.User
 
-  @doc """
-  Returns the list of users.
-  """
+  alias TimeManager.Repo
+  alias TimeManager.User
+
   def list_users do
     Repo.all(User)
   end
 
-  @doc """
-  Gets a single user.
-  Raises `Ecto.NoResultsError` if the User does not exist.
-  """
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_user!(id) do
+    Repo.get!(User, id)
+  end
 
-  @doc """
-  Creates a user.
-  """
-  def create_user(attrs) do
+  def create_user(attrs \\ %{}) do
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()
   end
 
-  @doc """
-  Updates a user.
-  """
   def update_user(%User{} = user, attrs) do
     user
     |> User.changeset(attrs)
     |> Repo.update()
   end
 
-  @doc """
-  Deletes a user.
-  """
   def delete_user(%User{} = user) do
     Repo.delete(user)
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user changes.
-  """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
   end

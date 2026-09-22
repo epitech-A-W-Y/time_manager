@@ -8,19 +8,19 @@
 import Config
 
 config :time_manager,
-  namespace: Todolist,
-  ecto_repos: [Todolist.Repo],
+  namespace: TimeManager,
+  ecto_repos: [TimeManager.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configure the endpoint
-config :time_manager, TodolistWeb.Endpoint,
+config :time_manager, TimeManagerWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [json: TodolistWeb.ErrorJSON],
+    formats: [json: TimeManagerWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: Todolist.PubSub,
+  pubsub_server: TimeManager.PubSub,
   live_view: [signing_salt: "dvG550gE"]
 
 # Configure the mailer
@@ -30,7 +30,7 @@ config :time_manager, TodolistWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :time_manager, Todolist.Mailer, adapter: Swoosh.Adapters.Local
+config :time_manager, TimeManager.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configure esbuild (the version is required)
 config :esbuild,

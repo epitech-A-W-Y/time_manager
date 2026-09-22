@@ -1,10 +1,8 @@
-defmodule TodolistWeb.UserController do
-  use TodolistWeb, :controller
+defmodule TimeManagerWeb.UserController do
+  use TimeManagerWeb, :controller
 
-  alias Todolist.Users
-  alias Todolist.User
-
-  action_fallback TodolistWeb.FallbackController
+  alias TimeManager.Users
+  alias TimeManager.User
 
   def index(conn, _params) do
     users = Users.list_users()
@@ -15,7 +13,6 @@ defmodule TodolistWeb.UserController do
     with {:ok, %User{} = user} <- Users.create_user(user_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", ~p"/api/users/#{user}")
       |> render(:show, user: user)
     end
   end

@@ -1,18 +1,20 @@
-defmodule Todolist.User do
+defmodule TimeManager.User do
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "users" do
-    field :first_name, :string
-    field :last_name, :string
-    has_many :tasks, Todolist.Task
+    field :username, :string
+    field :email, :string
+
     timestamps(type: :utc_datetime)
   end
 
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:first_name, :last_name])
-    |> validate_required([:first_name, :last_name])
+    |> cast(attrs, [:username, :email])
+    |> validate_required([:username, :email])
+    |> validate_format(:email, ~r/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
+    |> unique_constraint(:email)
   end
 end

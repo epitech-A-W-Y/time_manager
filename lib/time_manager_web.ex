@@ -1,20 +1,6 @@
-defmodule TodolistWeb do
+defmodule TimeManagerWeb do
   @moduledoc """
-  The entrypoint for defining your web interface, such
-  as controllers, components, channels, and so on.
-
-  This can be used in your application as:
-
-      use TodolistWeb, :controller
-      use TodolistWeb, :html
-
-  The definitions below will be executed for every controller,
-  component, etc, so keep them short and clean, focused
-  on imports, uses and aliases.
-
-  Do NOT define functions inside the quoted expressions
-  below. Instead, define additional modules and import
-  those modules here.
+  The entrypoint for defining the web interface.
   """
 
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
@@ -22,8 +8,6 @@ defmodule TodolistWeb do
   def router do
     quote do
       use Phoenix.Router, helpers: false
-
-      # Import common connection and controller functions to use in pipelines
       import Plug.Conn
       import Phoenix.Controller
     end
@@ -38,11 +22,8 @@ defmodule TodolistWeb do
   def controller do
     quote do
       use Phoenix.Controller, formats: [:html, :json]
-
-      use Gettext, backend: TodolistWeb.Gettext
-
+      use Gettext, backend: TimeManagerWeb.Gettext
       import Plug.Conn
-
       unquote(verified_routes())
     end
   end
@@ -50,15 +31,12 @@ defmodule TodolistWeb do
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,
-        endpoint: TodolistWeb.Endpoint,
-        router: TodolistWeb.Router,
-        statics: TodolistWeb.static_paths()
+        endpoint: TimeManagerWeb.Endpoint,
+        router: TimeManagerWeb.Router,
+        statics: TimeManagerWeb.static_paths()
     end
   end
 
-  @doc """
-  When used, dispatch to the appropriate controller/live_view/etc.
-  """
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
   end

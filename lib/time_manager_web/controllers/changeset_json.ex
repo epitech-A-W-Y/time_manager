@@ -1,4 +1,4 @@
-defmodule TodolistWeb.ChangesetJSON do
+defmodule TimeManagerWeb.ChangesetJSON do
   @doc """
   Renders changeset errors.
   """
@@ -13,9 +13,9 @@ defmodule TodolistWeb.ChangesetJSON do
     # uncommenting and adjusting the following code:
 
     # if count = opts[:count] do
-    #   Gettext.dngettext(TodolistWeb.Gettext, "errors", msg, msg, count, opts)
+    #   Gettext.dngettext(TimeManagerWeb.Gettext, "errors", msg, msg, count, opts)
     # else
-    #   Gettext.dgettext(TodolistWeb.Gettext, "errors", msg, opts)
+    #   Gettext.dgettext(TimeManagerWeb.Gettext, "errors", msg, opts)
     # end
 
     Enum.reduce(opts, msg, fn {key, value}, acc ->

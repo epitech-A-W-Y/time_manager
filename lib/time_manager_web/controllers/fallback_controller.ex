@@ -1,24 +1,15 @@
-defmodule TodolistWeb.FallbackController do
-  @moduledoc """
-  Translates controller action results into valid `Plug.Conn` responses.
+defmodule TimeManagerWeb.FallbackController do
+  use TimeManagerWeb, :controller
 
-  See `Phoenix.Controller.action_fallback/1` for more details.
-  """
-  use TodolistWeb, :controller
-
-  # This clause handles errors returned by Ecto's insert/update/delete.
   def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
     conn
-    |> put_status(:bad_request)
-    |> put_view(json: TodolistWeb.ChangesetJSON)
-    |> render(:error, changeset: changeset)
-  end
-
-  # This clause is an example of how to handle resources that cannot be found.
-  def call(conn, {:error, :not_found}) do
-    conn
-    |> put_status(:not_found)
-    |> put_view(html: TodolistWeb.ErrorHTML, json: TodolistWeb.ErrorJSON)
-    |> render(:"404")
+    |> put_status(:unprocessable_entity)
+    |> json(%{
+      errors: Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+        Enum.reduce(opts, msg, fn {key, value}, acc ->
+          String.replace(acc, "%{#{key}}", to_string(value))
+        end)
+      end)
+    })
   end
 end
