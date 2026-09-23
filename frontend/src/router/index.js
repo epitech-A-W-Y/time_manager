@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import User from '../components/User.vue'
 import WorkingTimes from '../components/WorkingTimes.vue'
 import WorkingTime from '../components/WorkingTime.vue'
+import ClockManager from '../components/ClockManager.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,8 +21,13 @@ const router = createRouter({
     },
     {
       path: '/workingTime',
-      name: 'WorkingTime',
+      name: 'WorkingTime', 
       component: WorkingTime
+    },
+    {
+      path: '/clockManager',
+      name: 'ClockManager',
+      component: ClockManager
     }
   ]
 })
