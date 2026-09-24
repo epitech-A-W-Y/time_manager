@@ -3,15 +3,21 @@ defmodule TimeManagerWeb.WorkingTimeController do
 
   alias TimeManager.WorkingTimes
   alias TimeManager.WorkingTime
+  alias TimeManager.Users
 
   def index(conn, %{"user_id" => user_id} = params) do
-    working_times = WorkingTimes.list_working_times(user_id)
+    case Users.get_user(user_id) do
+      nil ->
+        send_resp(conn, :not_found, "")
 
-    working_times =
-      working_times
-      |> filter_by_date(params)
+      _user ->
+        working_times =
+          user_id
+          |> WorkingTimes.list_working_times()
+          |> filter_by_date(params)
 
-    render(conn, :index, working_times: working_times)
+        render(conn, :index, working_times: working_times)
+    end
   end
 
   def show(conn, %{"user_id" => user_id, "id" => id}) do
@@ -24,42 +30,93 @@ defmodule TimeManagerWeb.WorkingTimeController do
     end
   end
 
-  def create(conn, %{"user_id" => user_id, "workingtime" => working_time_params}) do
-    working_time_params = Map.put(working_time_params, "user_id", user_id)
+  def create(conn, %{"user_id" => user_id} = params) do
+    case Users.get_user(user_id) do
+      nil ->
+        send_resp(conn, :not_found, "")
 
-    with {:ok, %WorkingTime{} = working_time} <-
-           WorkingTimes.create_working_time(working_time_params) do
-      conn
-      |> put_status(:created)
-      |> render(:show, working_time: working_time)
+      _user ->
+        working_time_params =
+          params
+          |> Map.delete("user_id")
+          |> Map.put("user_id", user_id)
+
+        case WorkingTimes.create_working_time(working_time_params) do
+          {:ok, %WorkingTime{} = working_time} ->
+            conn
+            |> put_status(:created)
+            |> render(:show, working_time: working_time)
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(
+              TimeManagerWeb.ChangesetJSON,
+              :error,
+              changeset: changeset
+            )
+        end
     end
   end
 
-  def update(conn, %{"id" => id, "workingtime" => working_time_params}) do
+  def update(conn, %{"id" => id} = params) do
     working_time = WorkingTimes.get_working_time!(id)
 
-    with {:ok, %WorkingTime{} = working_time} <-
-           WorkingTimes.update_working_time(working_time, working_time_params) do
-      render(conn, :show, working_time: working_time)
+    working_time_params =
+      Map.drop(params, ["id"])
+
+    case WorkingTimes.update_working_time(
+           working_time,
+           working_time_params
+         ) do
+      {:ok, %WorkingTime{} = working_time} ->
+        render(conn, :show, working_time: working_time)
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(
+          TimeManagerWeb.ChangesetJSON,
+          :error,
+          changeset: changeset
+        )
     end
   end
 
   def delete(conn, %{"id" => id}) do
     working_time = WorkingTimes.get_working_time!(id)
 
-    with {:ok, %WorkingTime{}} <- WorkingTimes.delete_working_time(working_time) do
-      send_resp(conn, :no_content, "")
+    case WorkingTimes.delete_working_time(working_time) do
+      {:ok, %WorkingTime{}} ->
+        send_resp(conn, :no_content, "")
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(
+          TimeManagerWeb.ChangesetJSON,
+          :error,
+          changeset: changeset
+        )
     end
   end
 
-  defp filter_by_date(working_times, %{"start" => start, "end" => ending}) do
+  defp filter_by_date(working_times, %{
+         "start" => start,
+         "end" => ending
+       }) do
+    start_datetime = parse_datetime(start)
+    end_datetime = parse_datetime(ending)
+
     Enum.filter(working_times, fn working_time ->
-      DateTime.compare(working_time.start, parse_datetime(start)) != :lt and
-        DateTime.compare(working_time.end, parse_datetime(ending)) != :gt
+      DateTime.compare(working_time.start, start_datetime) != :lt and
+        DateTime.compare(working_time.end, end_datetime) != :gt
     end)
   end
 
-  defp filter_by_date(working_times, _params), do: working_times
+  defp filter_by_date(working_times, _params) do
+    working_times
+  end
 
   defp parse_datetime(value) do
     {:ok, datetime, _offset} = DateTime.from_iso8601(value)
