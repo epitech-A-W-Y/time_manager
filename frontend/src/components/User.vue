@@ -1,5 +1,20 @@
 <template>
   <div>
+  <label>
+  User ID:
+  <input
+    v-model="userId"
+    type="number"
+    min="1"
+  />
+
+  <button
+    type="button"
+    @click="getUser(userId)"
+  >
+    Load User
+  </button>
+</label>
     <h1>User</h1>
 
     <form @submit.prevent="saveUser">
@@ -46,17 +61,17 @@ import axios from 'axios'
 export default {
   name: 'User',
 
-  data() {
-    return {
-      user: {
-        id: null,
-        username: '',
-        email: ''
-      },
-      message: ''
-    }
-  },
-
+data() {
+  return {
+    userId: '',
+    user: {
+      id: null,
+      username: '',
+      email: ''
+    },
+    message: ''
+  }
+},
   methods: {
     async createUser() {
       try {
@@ -92,52 +107,50 @@ export default {
       }
     },
 
-    async updateUser() {
-      try {
-        const response = await axios.patch(
-          `/api/users/${this.user.id}`,
-          {
-            user: {
-              username: this.user.username,
-              email: this.user.email
-            }
-          }
-        )
-
-        this.user = response.data.data
-        this.message = 'User updated successfully!'
-      } catch (error) {
-        console.error(error)
-        this.message = 'Error updating user.'
+   async updateUser() {
+  try {
+    const response = await axios.patch(
+      `/api/users/${this.user.id}`,
+      {
+        username: this.user.username,
+        email: this.user.email
       }
-    },
+    )
 
-    async deleteUser() {
-      try {
-        await axios.delete(
-          `/api/users/${this.user.id}`
-        )
+    this.user = response.data.data
+    this.message = 'User updated successfully!'
+  } catch (error) {
+    console.error(error)
+    this.message = 'Error updating user.'
+  }
+},
 
-        this.user = {
-          id: null,
-          username: '',
-          email: ''
-        }
+async deleteUser() {
+  try {
+    await axios.delete(
+      `/api/users/${this.user.id}`
+    )
 
-        this.message = 'User deleted successfully!'
-      } catch (error) {
-        console.error(error)
-        this.message = 'Error deleting user.'
-      }
-    },
-
-    saveUser() {
-      if (this.user.id) {
-        this.updateUser()
-      } else {
-        this.createUser()
-      }
+    this.user = {
+      id: null,
+      username: '',
+      email: ''
     }
+
+    this.message = 'User deleted successfully!'
+  } catch (error) {
+    console.error(error)
+    this.message = 'Error deleting user.'
+  }
+},
+
+saveUser() {
+  if (this.user.id) {
+    this.updateUser()
+  } else {
+    this.createUser()
+  }
+}
   }
 }
 </script>

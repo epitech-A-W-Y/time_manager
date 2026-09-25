@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
 import User from '../components/User.vue'
 import WorkingTimes from '../components/WorkingTimes.vue'
 import WorkingTime from '../components/WorkingTime.vue'
@@ -14,24 +15,34 @@ const router = createRouter({
       name: 'User',
       component: User
     },
+
     {
       path: '/workingTimes/:userID',
       name: 'WorkingTimes',
       component: WorkingTimes,
       props: true
     },
+
     {
-      path: '/workingTime',
-      name: 'WorkingTime', 
+      path: '/workingTime/:userid',
+      name: 'WorkingTimeCreate',
       component: WorkingTime
     },
+
     {
-      path: '/clockManager',
+      path: '/workingTime/:userid/:workingtimeid',
+      name: 'WorkingTimeEdit',
+      component: WorkingTime
+    },
+
+    {
+      path: '/clock/:userid',
       name: 'ClockManager',
       component: ClockManager
     },
+
     {
-      path: '/charts',
+      path: '/chartManager/:userid',
       name: 'ChartManager',
       component: ChartManager
     }

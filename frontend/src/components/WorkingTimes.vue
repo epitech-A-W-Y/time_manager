@@ -2,7 +2,9 @@
   <div>
     <h1>Working Times</h1>
 
-    <p>User ID: {{ userID }}</p>
+    <p>
+      User ID: {{ userID }}
+    </p>
 
     <button @click="getWorkingTimes">
       Refresh
@@ -19,16 +21,36 @@
     <div v-if="workingTimes.length > 0">
       <h2>Recorded Working Times</h2>
 
-      <ul>
-        <li
-          v-for="workingTime in workingTimes"
-          :key="workingTime.id"
-        >
-          <p>ID: {{ workingTime.id }}</p>
-          <p>Start: {{ workingTime.start }}</p>
-          <p>End: {{ workingTime.end }}</p>
-        </li>
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Duration</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            v-for="workingTime in workingTimes"
+            :key="workingTime.id"
+          >
+            <td>{{ workingTime.id }}</td>
+            <td>{{ formatDateTime(workingTime.start) }}</td>
+            <td>{{ formatDateTime(workingTime.end) }}</td>
+            <td>{{ getDuration(workingTime) }}</td>
+            <td>
+  <router-link
+    :to="`/workingTime/${userID}/${workingTime.id}`"
+  >
+    Edit
+  </router-link>
+</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <p v-else-if="!loading && !message">
@@ -68,11 +90,9 @@ export default {
           `/api/workingtime/${this.userID}`
         )
 
-        console.log('API RESPONSE:', response.data)
-
         this.workingTimes = response.data.data
       } catch (error) {
-        console.error('ERROR:', error)
+        console.error(error)
 
         this.message =
           error.response?.data?.message ||
@@ -81,6 +101,28 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+
+    formatDateTime(dateTime) {
+      if (!dateTime) {
+        return '-'
+      }
+
+      return dateTime.replace('T', ' ').replace('Z', '')
+    },
+
+    getDuration(workingTime) {
+      if (!workingTime.start || !workingTime.end) {
+        return '-'
+      }
+
+      const start = new Date(workingTime.start)
+      const end = new Date(workingTime.end)
+
+      const duration =
+        (end - start) / (1000 * 60 * 60)
+
+      return `${duration.toFixed(2)} hours`
     }
   },
 

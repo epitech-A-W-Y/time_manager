@@ -7,18 +7,49 @@
 
       <div class="nav-links">
         <router-link to="/user">Users</router-link>
-        <router-link to="/workingTimes/1">Working Times</router-link>
-        <router-link to="/workingTime">Add Working Time</router-link>
-        <router-link to="/clockManager">Clock Manager</router-link>
-        <router-link to="/charts">Dashboard</router-link>
+
+        <router-link :to="`/workingTimes/${userId}`">
+          Working Times
+        </router-link>
+
+        <router-link :to="`/workingTime/${userId}`">
+          Add Working Time
+        </router-link>
+
+        <router-link :to="`/clock/${userId}`">
+          Clock Manager
+        </router-link>
+
+        <router-link :to="`/chartManager/${userId}`">
+          Dashboard
+        </router-link>
       </div>
     </nav>
 
     <main class="main-content">
+      <User v-if="$route.path !== '/user'" />
       <router-view />
     </main>
   </div>
 </template>
+
+<script>
+import User from './components/User.vue'
+
+export default {
+  name: 'App',
+
+  components: {
+    User
+  },
+
+  data() {
+    return {
+      userId: 1
+    }
+  }
+}
+</script>
 
 <style scoped>
 .app {
