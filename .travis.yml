@@ -1,0 +1,23 @@
+language: minimal
+
+services:
+  - docker
+
+before_install:
+  - docker --version
+  - docker compose version
+
+script:
+  - docker compose build
+  - docker compose up -d db phoenix
+  - sleep 10
+  - docker compose exec -T phoenix sh -c 'unset PHX_SERVER; mix test'
+  - docker compose build frontend
+  - docker compose down
+
+after_success:
+  - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - docker build -t "$DOCKERHUB_USERNAME/time-manager-backend:latest" .
+  - docker build -t "$DOCKERHUB_USERNAME/time-manager-frontend:latest" ./frontend
+  - docker push "$DOCKERHUB_USERNAME/time-manager-backend:latest"
+  - docker push "$DOCKERHUB_USERNAME/time-manager-frontend:latest"
