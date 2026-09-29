@@ -18,7 +18,7 @@ defmodule Todolist.DataCase do
 
   using do
     quote do
-      alias Todolist.Repo
+      alias TimeManager.Repo
 
       import Ecto
       import Ecto.Changeset
@@ -36,7 +36,7 @@ defmodule Todolist.DataCase do
   Sets up the sandbox based on the test tags.
   """
   def setup_sandbox(tags) do
-    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Todolist.Repo, shared: not tags[:async])
+    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(TimeManager.Repo, shared: not tags[:async])
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
   end
 

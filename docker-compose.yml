@@ -1,4 +1,11 @@
 services:
+  frontend:
+    build: ./frontend
+    depends_on:
+      - phoenix
+    ports:
+      - "8080:80"
+
   phoenix:
     build: .
     depends_on:
