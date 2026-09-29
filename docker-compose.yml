@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: time-manager-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: time_manager_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    image: time-manager-backend:latest
+    container_name: time-manager-backend
+    depends_on:
+      - db
+    environment:
+      MIX_ENV: prod
+      DATABASE_URL: ecto://postgres:postgres@db/time_manager_dev
+      SECRET_KEY_BASE: "RoRZhmrOUwvWIVq6SGejmQXWI7Pr9C6Iuj/BtENXh64bFjiVmElnG1xK/trro/eb"
+      PHX_SERVER: "true"
+      PHX_HOST: localhost
+      PORT: "4000"
+    ports:
+      - "4000:4000"
+
+  frontend:
+    image: time-manager-frontend:latest
+    container_name: time-manager-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data:
