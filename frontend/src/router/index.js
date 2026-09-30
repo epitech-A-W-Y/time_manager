@@ -1,23 +1,31 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import User from '../components/User.vue'
-import WorkingTimes from '../components/WorkingTimes.vue'
+
+import Employee from '../components/Employee.vue'
+import Manager from '../components/Manager.vue'
+import Administrator from '../components/Administrator.vue'
+
+const routes = [
+  {
+    path: '/',
+    redirect: '/employee'
+  },
+  {
+    path: '/employee',
+    component: Employee
+  },
+  {
+    path: '/manager',
+    component: Manager
+  },
+  {
+    path: '/administrator',
+    component: Administrator
+  }
+]
 
 const router = createRouter({
   history: createWebHistory(),
-
-  routes: [
-    {
-      path: '/user',
-      name: 'User',
-      component: User
-    },
-    {
-      path: '/workingTimes/:userID',
-      name: 'WorkingTimes',
-      component: WorkingTimes,
-      props: true
-    }
-  ]
+  routes
 })
 
 export default router
