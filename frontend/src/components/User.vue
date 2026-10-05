@@ -8,7 +8,6 @@
       </div>
     </div>
 
-    <!-- Load user -->
     <div class="card load-card">
       <div class="card-header">
         <div class="section-icon">🔎</div>
@@ -40,7 +39,6 @@
       </div>
     </div>
 
-    <!-- User form -->
     <div class="card">
       <div class="card-header">
         <div class="section-icon">👤</div>
@@ -89,7 +87,6 @@
       </form>
     </div>
 
-    <!-- Current user -->
     <div v-if="user.id" class="card profile-card">
       <div class="card-header">
         <div class="profile-avatar">
@@ -135,7 +132,6 @@
       </div>
     </div>
 
-    <!-- Message -->
     <div
       v-if="message"
       class="message"
@@ -150,7 +146,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '../axios'
 
 export default {
   name: 'User',
@@ -170,8 +166,8 @@ export default {
   methods: {
     async createUser() {
       try {
-        const response = await axios.post(
-          '/api/users',
+        const response = await api.post(
+          '/users',
           {
             username: this.user.username,
             email: this.user.email
@@ -198,8 +194,8 @@ export default {
       }
 
       try {
-        const response = await axios.get(
-          `/api/users/${id}`
+        const response = await api.get(
+          `/users/${id}`
         )
 
         this.user = response.data.data
@@ -217,8 +213,8 @@ export default {
 
     async updateUser() {
       try {
-        const response = await axios.patch(
-          `/api/users/${this.user.id}`,
+        const response = await api.patch(
+          `/users/${this.user.id}`,
           {
             username: this.user.username,
             email: this.user.email
@@ -240,8 +236,8 @@ export default {
 
     async deleteUser() {
       try {
-        await axios.delete(
-          `/api/users/${this.user.id}`
+        await api.delete(
+          `/users/${this.user.id}`
         )
 
         this.user = {

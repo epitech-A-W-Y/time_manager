@@ -1,6 +1,5 @@
 <template>
   <div class="clock-page">
-    <!-- Page heading -->
     <div class="page-heading">
       <div>
         <span class="eyebrow">ATTENDANCE</span>
@@ -14,7 +13,6 @@
       </div>
     </div>
 
-    <!-- Main clock card -->
     <div class="clock-card">
       <div class="clock-icon">
         🕐
@@ -33,7 +31,6 @@
         :class="clockIn ? 'active' : 'inactive'"
       >
         <span class="status-dot"></span>
-
         {{ clockIn ? 'Currently Clocked In' : 'Currently Clocked Out' }}
       </div>
 
@@ -63,7 +60,6 @@
       </button>
     </div>
 
-    <!-- Session information -->
     <div class="info-card">
       <div class="info-header">
         <div class="section-icon">
@@ -98,7 +94,6 @@
       </div>
     </div>
 
-    <!-- Message -->
     <div
       v-if="message"
       class="message"
@@ -113,7 +108,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '../axios'
 
 export default {
   name: 'ClockManager',
@@ -186,8 +181,8 @@ export default {
       try {
         this.message = ''
 
-        const response = await axios.get(
-          `/api/clocks/${this.userID}`
+        const response = await api.get(
+          `/clocks/${this.userID}`
         )
 
         const clocks = response.data.data || []
@@ -231,8 +226,8 @@ export default {
 
         const now = new Date().toISOString()
 
-        const response = await axios.post(
-          `/api/clocks/${this.userID}`,
+        const response = await api.post(
+          `/clocks/${this.userID}`,
           {
             clock: {
               time: now,
@@ -284,8 +279,6 @@ export default {
   max-width: 950px;
   margin: 0 auto;
 }
-
-/* PAGE HEADING */
 
 .page-heading {
   display: flex;
@@ -339,8 +332,6 @@ export default {
   color: #1e40af;
   font-size: 14px;
 }
-
-/* CLOCK CARD */
 
 .clock-card {
   display: flex;
@@ -454,8 +445,6 @@ export default {
   opacity: 0.5;
 }
 
-/* SESSION CARD */
-
 .info-card {
   margin-top: 20px;
   padding: 26px;
@@ -523,8 +512,6 @@ export default {
   font-size: 13px;
 }
 
-/* MESSAGE */
-
 .message {
   margin-top: 20px;
   padding: 13px 16px;
@@ -544,8 +531,6 @@ export default {
   background: #fef2f2;
   color: #dc2626;
 }
-
-/* RESPONSIVE */
 
 @media (max-width: 700px) {
   .page-heading {

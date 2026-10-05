@@ -1,5 +1,7 @@
 <template>
-  <div class="app">
+  <router-view v-if="['/sign_in', '/sign_up'].includes($route.path)" />
+
+<div v-else class="app">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-icon">⏱</div>
@@ -65,12 +67,16 @@
         </div>
 
         <div class="user-badge">
-          <div class="avatar">Y</div>
-          <div>
-            <strong>User #{{ userId }}</strong>
-            <span>Employee</span>
-          </div>
-        </div>
+  <div class="avatar">Y</div>
+  <div>
+    <strong>User #{{ userId }}</strong>
+    <span>Employee</span>
+  </div>
+</div>
+
+<button v-if="userId" @click="disconnect" class="logout-button">
+  Logout
+</button>
       </header>
 
       <main class="main-content">
@@ -83,6 +89,7 @@
 
 <script>
 import User from './components/User.vue'
+import api from './axios'
 
 export default {
   name: 'App',
@@ -93,7 +100,24 @@ export default {
 
   data() {
     return {
-      userId: 1
+      userId: localStorage.getItem('userId')
+    }
+  },
+
+  methods: {
+    async disconnect() {
+      try {
+        await api.post('/users/sign_out')
+      } catch (error) {
+        console.log('Logout request failed:', error)
+      }
+
+      localStorage.removeItem('xsrfToken')
+      localStorage.removeItem('userId')
+      localStorage.removeItem('roleId')
+
+      this.userId = null
+      this.$router.push('/sign_in')
     }
   }
 }

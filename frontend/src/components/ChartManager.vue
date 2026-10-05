@@ -184,7 +184,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '../axios'
 
 import {
   Chart as ChartJS,
@@ -374,8 +374,8 @@ export default {
       this.errorMessage = ''
 
       try {
-        const response = await axios.get(
-          `/api/workingtime/${this.userId}`
+        const response = await api.get(
+          `/workingtime/${this.userId}`
         )
 
         const workingTimes = response.data.data || []

@@ -1,6 +1,5 @@
 <template>
   <div class="working-time-page">
-    <!-- Page heading -->
     <div class="page-heading">
       <div>
         <span class="eyebrow">TIME TRACKING</span>
@@ -24,7 +23,6 @@
       </div>
     </div>
 
-    <!-- Form card -->
     <div class="card">
       <div class="card-header">
         <div class="section-icon">
@@ -93,7 +91,6 @@
       </form>
     </div>
 
-    <!-- Current working time -->
     <div
       v-if="workingTime.id"
       class="card current-card"
@@ -155,7 +152,6 @@
       </div>
     </div>
 
-    <!-- Message -->
     <div
       v-if="message"
       class="message"
@@ -170,7 +166,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '../axios'
 
 export default {
   name: 'WorkingTime',
@@ -249,8 +245,8 @@ export default {
 
     async getWorkingTime() {
       try {
-        const response = await axios.get(
-          `/api/workingtime/${this.userId}/${this.workingTimeId}`
+        const response = await api.get(
+          `/workingtime/${this.userId}/${this.workingTimeId}`
         )
 
         const data = response.data.data
@@ -276,8 +272,8 @@ export default {
 
     async createWorkingTime() {
       try {
-        const response = await axios.post(
-          `/api/workingtime/${this.userId}`,
+        const response = await api.post(
+          `/workingtime/${this.userId}`,
           {
             workingtime: {
               start: this.formatDateTime(
@@ -305,8 +301,8 @@ export default {
 
     async updateWorkingTime() {
       try {
-        const response = await axios.put(
-          `/api/workingtime/${this.workingTimeId}`,
+        const response = await api.put(
+          `/workingtime/${this.workingTimeId}`,
           {
             start: this.formatDateTime(
               this.workingTime.start
@@ -332,8 +328,8 @@ export default {
 
     async deleteWorkingTime() {
       try {
-        await axios.delete(
-          `/api/workingtime/${this.workingTimeId}`
+        await api.delete(
+          `/workingtime/${this.workingTimeId}`
         )
 
         this.workingTime = {
@@ -376,8 +372,6 @@ export default {
   max-width: 950px;
   margin: 0 auto;
 }
-
-/* PAGE HEADING */
 
 .page-heading {
   display: flex;
@@ -432,8 +426,6 @@ export default {
   font-size: 14px;
 }
 
-/* CARD */
-
 .card {
   margin-bottom: 20px;
   padding: 26px;
@@ -479,8 +471,6 @@ export default {
   color: #16a34a;
   font-weight: 700;
 }
-
-/* FORM */
 
 .form-grid {
   display: grid;
@@ -567,8 +557,6 @@ export default {
   transform: translateY(-1px);
 }
 
-/* CURRENT RECORD */
-
 .current-card .card-header {
   margin-bottom: 20px;
 }
@@ -611,8 +599,6 @@ export default {
   font-size: 13px;
 }
 
-/* DELETE */
-
 .danger-zone {
   display: flex;
   align-items: center;
@@ -650,8 +636,6 @@ export default {
   color: white;
 }
 
-/* MESSAGE */
-
 .message {
   margin-bottom: 20px;
   padding: 13px 16px;
@@ -671,8 +655,6 @@ export default {
   background: #fef2f2;
   color: #dc2626;
 }
-
-/* RESPONSIVE */
 
 @media (max-width: 750px) {
   .page-heading {

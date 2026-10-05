@@ -195,7 +195,7 @@ export default {
 
       try {
         const response = await axios.get(
-          `/api/workingtime/${this.userID}`
+          `/workingtime/${this.userID}`
         )
 
         this.workingTimes = response.data.data
