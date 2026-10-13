@@ -1,0 +1,17 @@
+
+name: Mirroring
+
+on: [push, delete]
+
+jobs:
+  to_school:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: https://github.com/orgs/Epitech2026-2027/sso/sign_up
+          ssh_private_key: ${{ secrets.TARGET_SSH_PRIVATE_KEY }}
