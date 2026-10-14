@@ -30,7 +30,11 @@ defmodule TimeManager.Users do
     |> User.changeset(attrs)
     |> Repo.update()
   end
-
+def set_user_password(%User{} = user, attrs) do
+  user
+  |> User.password_changeset(attrs)
+  |> Repo.update()
+end
   def delete_user(%User{} = user) do
     Repo.delete(user)
   end

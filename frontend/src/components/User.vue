@@ -61,14 +61,12 @@ export default {
     async createUser() {
       try {
         const response = await axios.post(
-          '/api/users',
-          {
-            user: {
-              username: this.user.username,
-              email: this.user.email
-            }
-          }
-        )
+  '/api/users',
+  {
+    username: this.user.username,
+    email: this.user.email
+  }
+)
 
         this.user = response.data.data
         this.message = 'User created successfully!'
@@ -88,7 +86,7 @@ export default {
         this.message = 'User loaded successfully!'
       } catch (error) {
         console.error(error)
-        this.message = 'Error getting user.'
+         this.message = 'Error getting user.'
       }
     },
 
