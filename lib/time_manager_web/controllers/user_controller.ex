@@ -69,6 +69,7 @@ defmodule TimeManagerWeb.UserController do
               "jwt",
               jwt,
               http_only: true,
+              secure: Application.get_env(:time_manager, :secure_cookies, false),
               max_age: 30 * 24 * 60 * 60,
               same_site: "Lax"
             )

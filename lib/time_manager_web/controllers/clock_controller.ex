@@ -5,19 +5,30 @@ defmodule TimeManagerWeb.ClockController do
   alias TimeManager.Clock
 
   def index(conn, %{"user_id" => user_id}) do
-    clocks = Clocks.list_clocks(user_id)
-
-    render(conn, :index, clocks: clocks)
+    if to_string(conn.assigns.current_user_id) != user_id do
+      conn
+      |> put_status(:forbidden)
+      |> json(%{error: "Forbidden"})
+    else
+      clocks = Clocks.list_clocks(user_id)
+      render(conn, :index, clocks: clocks)
+    end
   end
 
   def create(conn, %{"user_id" => user_id, "clock" => clock_params}) do
-    clock_params = Map.put(clock_params, "user_id", user_id)
-
-    with {:ok, %Clock{} = clock} <-
-           Clocks.create_clock(clock_params) do
+    if to_string(conn.assigns.current_user_id) != user_id do
       conn
-      |> put_status(:created)
-      |> render(:show, clock: clock)
+      |> put_status(:forbidden)
+      |> json(%{error: "Forbidden"})
+    else
+      clock_params = Map.put(clock_params, "user_id", user_id)
+
+      with {:ok, %Clock{} = clock} <-
+             Clocks.create_clock(clock_params) do
+        conn
+        |> put_status(:created)
+        |> render(:show, clock: clock)
+      end
     end
   end
 end

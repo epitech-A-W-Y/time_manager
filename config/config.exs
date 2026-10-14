@@ -6,7 +6,14 @@
 
 # General application configuration
 import Config
+jwt_secret = System.get_env("JWT_SECRET")
 
+if is_binary(jwt_secret) and byte_size(jwt_secret) >= 32 do
+  config :joken, default_signer: [
+    signer_alg: "HS256",
+    key_octet: jwt_secret
+  ]
+end
 config :time_manager,
   namespace: TimeManager,
   ecto_repos: [TimeManager.Repo],

@@ -28,14 +28,15 @@ belongs_to :role, TimeManager.Accounts.Role
     |> unique_constraint(:email)
   end
 
-def registration_changeset(user, attrs) do
-  user
+  def registration_changeset(user, attrs) do
+    user
     |> changeset(Map.put_new(attrs, :role_id, 2))
     |> validate_required([:username, :password])
-    |> validate_length(:password, min: 8)
+    |> validate_length(:username, min: 1, max: 50)
+    |> validate_length(:email, max: 255)
+    |> validate_length(:password, min: 8, max: 72, count: :bytes)
     |> put_password_hash()
   end
-
   defp put_password_hash(changeset) do
     case get_change(changeset, :password) do
       nil ->
