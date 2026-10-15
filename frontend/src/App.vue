@@ -67,10 +67,10 @@
         </div>
 
         <div class="user-badge">
-  <div class="avatar">Y</div>
+  <div class="avatar">{{ username.charAt(0).toUpperCase() }}</div>
   <div>
-    <strong>User #{{ userId }}</strong>
-    <span>Employee</span>
+    <strong>{{ username || 'User' }}</strong>
+    <span>{{ role || 'Employee' }}</span>
   </div>
 </div>
 
@@ -80,7 +80,9 @@
       </header>
 
       <main class="main-content">
-        <User v-if="$route.path !== '/user'" />
+        <User
+  v-if="['admin', 'hr'].includes(role?.toLowerCase()) && $route.path !== '/user'"
+/>
         <router-view />
       </main>
     </div>
@@ -98,12 +100,20 @@ export default {
     User
   },
 
-  data() {
-    return {
-      userId: localStorage.getItem('userId')
-    }
-  },
-
+data() {
+  return {
+    userId: localStorage.getItem('userId'),
+    username: localStorage.getItem('username') || '',
+    role: localStorage.getItem('role') || 'Employee'
+  }
+},
+watch: {
+  $route() {
+    this.userId = localStorage.getItem('userId')
+    this.username = localStorage.getItem('username') || ''
+    this.role = localStorage.getItem('role') || 'Employee'
+  }
+},
   methods: {
     async disconnect() {
       try {
@@ -115,7 +125,8 @@ export default {
       localStorage.removeItem('xsrfToken')
       localStorage.removeItem('userId')
       localStorage.removeItem('roleId')
-
+localStorage.removeItem('username')
+localStorage.removeItem('role')
       this.userId = null
       this.$router.push('/sign_in')
     }

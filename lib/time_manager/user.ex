@@ -5,7 +5,8 @@ defmodule TimeManager.User do
   schema "users" do
     field :username, :string
     field :email, :string
-
+field :role, :string
+field :hashed_password, :string, redact: true
     timestamps(type: :utc_datetime)
   end
 

@@ -148,7 +148,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '../axios'
 
 export default {
   name: 'WorkingTimes',
@@ -194,9 +194,9 @@ export default {
       this.message = ''
 
       try {
-        const response = await axios.get(
-          `/workingtime/${this.userID}`
-        )
+        const response = await api.get(
+  `/workingtime/${this.userID}`
+)
 
         this.workingTimes = response.data.data
       } catch (error) {

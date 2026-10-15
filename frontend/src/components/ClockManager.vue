@@ -1,3 +1,4 @@
+wdata()
 <template>
   <div class="clock-page">
     <div class="page-heading">
@@ -9,7 +10,7 @@
 
       <div class="employee-badge">
         <span>EMPLOYEE</span>
-        <strong>#{{ userID }}</strong>
+       <strong>{{ username || `Employee #${userID}` }}</strong>
       </div>
     </div>
 
@@ -74,10 +75,14 @@
 
       <div class="session-details">
         <div class="detail">
-          <span>Employee</span>
-          <strong>#{{ userID }}</strong>
-        </div>
-
+  <span>Employee</span>
+  <strong>{{ username || `Employee #${userID}` }}</strong>
+  <span>Employee ID: {{ userID }}</span>
+</div>
+<div class="detail">
+  <span>Clocked Out At</span>
+  <strong>{{ endDateTime ? formatDateTime(endDateTime) : '—' }}</strong>
+</div>
         <div class="detail">
           <span>Status</span>
           <strong>
@@ -114,18 +119,19 @@ export default {
   name: 'ClockManager',
 
   data() {
-    return {
-      userID: this.$route.params.userid || '',
-      startDateTime: null,
-      clockIn: false,
-      message: '',
-      loading: false,
-      currentTime: '',
-      currentDate: '',
-      timer: null
-    }
-  },
-
+  return {
+  userID: this.$route.params.userid || localStorage.getItem('userId') || '',
+    username: localStorage.getItem('username') || '',
+    startDateTime: null,
+endDateTime: null,
+clockIn: false,
+    message: '',
+    loading: false,
+    currentTime: '',
+    currentDate: '',
+    timer: null
+  }
+},
   methods: {
     updateCurrentTime() {
       const now = new Date()
@@ -172,7 +178,17 @@ export default {
         }
       )
     },
+async loadEmployee() {
+  if (!this.userID) return
 
+  try {
+    const response = await api.get(`/users/${this.userID}`)
+    this.username = response.data.data.username
+  } catch (error) {
+    console.error('Unable to load employee:', error)
+    this.username = ''
+  }
+},
     async refresh() {
       if (!this.userID) {
         return
@@ -197,11 +213,20 @@ export default {
 
         this.clockIn = lastClock.status
 
-        if (this.clockIn) {
-          this.startDateTime = lastClock.time
-        } else {
-          this.startDateTime = null
-        }
+if (this.clockIn) {
+  this.startDateTime = lastClock.time
+  this.endDateTime = null
+} else {
+  this.endDateTime = lastClock.time
+
+  const previousClockIn = [...clocks]
+    .reverse()
+    .find(clock => clock.status === true)
+
+  this.startDateTime = previousClockIn
+    ? previousClockIn.time
+    : null
+}
       } catch (error) {
         console.error(error)
 
@@ -238,13 +263,15 @@ export default {
 
         this.clockIn = response.data.data.status
 
-        if (this.clockIn) {
-          this.startDateTime = response.data.data.time
-          this.message = 'Clocked in successfully!'
-        } else {
-          this.startDateTime = null
-          this.message = 'Clocked out successfully!'
-        }
+       if (this.clockIn) {
+  this.startDateTime = response.data.data.time
+  this.endDateTime = null
+  this.message = 'Clocked in successfully!'
+} else {
+  this.endDateTime = response.data.data.time
+  this.message = 'Clocked out successfully!'
+}
+
       } catch (error) {
         console.error(error)
 
@@ -260,6 +287,7 @@ export default {
 
   mounted() {
     this.updateCurrentTime()
+this.loadEmployee()
     this.refresh()
 
     this.timer = setInterval(

@@ -53,3 +53,7 @@ config :phoenix, :plug_init_mode, :runtime
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+config :joken, default_signer: [
+  signer_alg: "HS256",
+  key_octet: System.fetch_env!("JWT_SECRET")
+]

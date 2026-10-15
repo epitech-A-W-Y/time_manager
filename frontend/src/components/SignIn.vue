@@ -69,9 +69,10 @@ export default {
         )
 
         localStorage.setItem('xsrfToken', response.data.xsrf_token)
-        localStorage.setItem('userId', response.data.id)
-        localStorage.setItem('roleId', response.data.role)
-
+localStorage.setItem('userId', response.data.id)
+localStorage.setItem('username', response.data.username)
+localStorage.setItem('roleId', response.data.role_id)
+localStorage.setItem('role', response.data.role)
         this.$router.push('/user')
       } catch (error) {
         this.error =

@@ -91,10 +91,10 @@
       </form>
     </div>
 
-    <div
-      v-if="workingTime.id"
-      class="card current-card"
-    >
+ <div
+  v-if="displayedWorkingTime && displayedWorkingTime.id"
+  class="card current-card"
+>
       <div class="card-header">
         <div class="section-icon green">
           ✓
@@ -115,26 +115,26 @@
       <div class="details-grid">
         <div class="detail">
           <span class="detail-label">Working Time ID</span>
-          <strong>#{{ workingTime.id }}</strong>
+          <strong>#{{ displayedWorkingTime.id }}</strong>
         </div>
 
         <div class="detail">
           <span class="detail-label">Start</span>
-          <strong>{{ displayDateTime(workingTime.start) }}</strong>
+          <strong>{{ displayDateTime(displayedWorkingTime.start) }}</strong>
         </div>
 
         <div class="detail">
           <span class="detail-label">End</span>
-          <strong>{{ displayDateTime(workingTime.end) }}</strong>
+          <strong>{{ displayDateTime(displayedWorkingTime.end) }}</strong>
         </div>
 
         <div class="detail">
           <span class="detail-label">Duration</span>
-          <strong>{{ calculatedDuration }}</strong>
+          <strong>{{ savedDuration }}</strong>
         </div>
       </div>
 
-      <div class="danger-zone">
+      <div v-if="isEditing" class="danger-zone">
         <div>
           <strong>Delete this working period</strong>
           <p>
@@ -173,13 +173,14 @@ export default {
 
   data() {
     return {
-      workingTime: {
-        id: null,
-        start: '',
-        end: ''
-      },
-      message: ''
-    }
+  workingTime: {
+    id: null,
+    start: '',
+    end: ''
+  },
+  latestSavedWorkingTime: null,
+  message: ''
+}
   },
 
   computed: {
@@ -194,7 +195,29 @@ export default {
     isEditing() {
       return !!this.workingTimeId
     },
+displayedWorkingTime() {
+  return this.isEditing
+    ? this.workingTime
+    : this.latestSavedWorkingTime
+},
+savedDuration() {
+  const record = this.displayedWorkingTime
 
+  if (!record || !record.start || !record.end) {
+    return '-'
+  }
+
+  const start = new Date(record.start)
+  const end = new Date(record.end)
+
+  const hours = (end - start) / (1000 * 60 * 60)
+
+  if (!Number.isFinite(hours) || hours < 0) {
+    return 'Invalid time'
+  }
+
+  return `${hours.toFixed(2)} hours`
+},
     calculatedDuration() {
       if (!this.workingTime.start || !this.workingTime.end) {
         return '-'
@@ -215,6 +238,24 @@ export default {
   },
 
   methods: {
+async loadLatestSavedWorkingTime() {
+  if (!this.userId) return
+
+  try {
+    const response = await api.get(
+      `/workingtime/${this.userId}`
+    )
+
+    const records = response.data.data || []
+
+    this.latestSavedWorkingTime = records.length
+      ? [...records].sort((a, b) => b.id - a.id)[0]
+      : null
+  } catch (error) {
+    console.error('Error loading saved working time:', error)
+    this.latestSavedWorkingTime = null
+  }
+},
     formatDateTime(dateTime) {
       if (!dateTime) {
         return null
@@ -286,9 +327,15 @@ export default {
           }
         )
 
-        this.workingTime = response.data.data
-        this.message =
-          'Working time created successfully!'
+        this.latestSavedWorkingTime = response.data.data
+
+this.workingTime = {
+  id: null,
+  start: '',
+  end: ''
+}
+
+this.message = 'Working time created successfully!'
       } catch (error) {
         console.error(error)
 
@@ -302,16 +349,18 @@ export default {
     async updateWorkingTime() {
       try {
         const response = await api.put(
-          `/workingtime/${this.workingTimeId}`,
-          {
-            start: this.formatDateTime(
-              this.workingTime.start
-            ),
-            end: this.formatDateTime(
-              this.workingTime.end
-            )
-          }
-        )
+  `/workingtime/${this.workingTimeId}`,
+  {
+    workingtime: {
+      start: this.formatDateTime(
+        this.workingTime.start
+      ),
+      end: this.formatDateTime(
+        this.workingTime.end
+      )
+    }
+  }
+)
 
         this.workingTime = response.data.data
         this.message =
@@ -359,11 +408,13 @@ export default {
     }
   },
 
-  mounted() {
-    if (this.isEditing) {
-      this.getWorkingTime()
-    }
+mounted() {
+  if (this.isEditing) {
+    this.getWorkingTime()
+  } else {
+    this.loadLatestSavedWorkingTime()
   }
+}
 }
 </script>
 
