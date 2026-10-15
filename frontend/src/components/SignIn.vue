@@ -73,7 +73,15 @@ localStorage.setItem('userId', response.data.id)
 localStorage.setItem('username', response.data.username)
 localStorage.setItem('roleId', response.data.role_id)
 localStorage.setItem('role', response.data.role)
-        this.$router.push('/user')
+       const role = (response.data.role || 'employee').toLowerCase()
+
+if (role === 'admin') {
+  this.$router.push('/admin')
+} else if (role === 'manager') {
+  this.$router.push('/manager')
+} else {
+  this.$router.push('/employee')
+}
       } catch (error) {
         this.error =
           error.response?.data?.error ||

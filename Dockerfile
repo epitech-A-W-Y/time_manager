@@ -16,7 +16,12 @@ COPY lib lib
 COPY priv priv
 COPY assets assets
 
-RUN mix compile && mix phx.digest
+ENV MIX_ENV=prod
+
+RUN mix deps.get --only prod && \
+    mix deps.compile && \
+    mix compile && \
+    mix phx.digest
 
 EXPOSE 4000
 

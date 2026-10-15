@@ -40,7 +40,7 @@ defmodule TimeManagerWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
 plug CORSPlug,
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173", "http://localhost:5174"],
   credentials: true,
   headers: ["Content-Type", "Authorization", "X-XSRF-Token"]
   plug TimeManagerWeb.Router

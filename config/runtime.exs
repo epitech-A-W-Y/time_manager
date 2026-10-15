@@ -42,4 +42,12 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0}
     ],
     secret_key_base: secret_key_base
+  jwt_secret =
+    System.get_env("JWT_SECRET") ||
+      raise "environment variable JWT_SECRET is missing"
+
+  config :joken, default_signer: [
+    signer_alg: "HS256",
+    key_octet: jwt_secret
+  ]
 end

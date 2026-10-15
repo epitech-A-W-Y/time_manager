@@ -1,55 +1,81 @@
+
 <template>
   <div class="user-page">
     <div class="page-heading">
-      <div>
-        <span class="eyebrow">EMPLOYEE MANAGEMENT</span>
-        <h1>User Profile</h1>
-        <p>Manage employee information and account details.</p>
-      </div>
+      <span class="eyebrow">ADMINISTRATION</span>
+      <h1>User Management</h1>
+      <p>View, search, create, edit and delete users.</p>
     </div>
 
-    <div class="card load-card">
+    <!-- ALL USERS -->
+    <div class="card">
       <div class="card-header">
-        <div class="section-icon">🔎</div>
+        <div class="section-icon">👥</div>
         <div>
-          <h2>Find Employee</h2>
-          <p>Enter an employee ID to load their information.</p>
+          <h2>All Users</h2>
+          <p>Manage your registered employees and accounts.</p>
         </div>
       </div>
 
-      <div class="load-form">
-        <div class="field">
-          <label for="user-id">User ID</label>
-          <input
-            id="user-id"
-            v-model="userId"
-            type="number"
-            min="1"
-            placeholder="Enter user ID"
-          />
-        </div>
-
-        <button
-          type="button"
-          class="primary-button load-button"
-          @click="getUser(userId)"
-        >
-          Load User
+      <div class="toolbar">
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Search by name, email or ID..."
+        />
+        <button class="primary-button" @click="loadUsers">
+          Refresh
         </button>
       </div>
+
+      <p v-if="loading">Loading users...</p>
+
+      <div v-else class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr v-for="employee in filteredUsers" :key="employee.id">
+              <td>#{{ employee.id }}</td>
+              <td>{{ employee.username }}</td>
+              <td>{{ employee.email }}</td>
+              <td>
+                <button
+                  class="edit-button"
+                  @click="selectUser(employee)"
+                >
+                  Edit
+                </button>
+              </td>
+            </tr>
+
+            <tr v-if="filteredUsers.length === 0">
+              <td colspan="4" class="empty">
+                No users found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
+    <!-- CREATE OR EDIT USER -->
     <div class="card">
       <div class="card-header">
         <div class="section-icon">👤</div>
         <div>
-          <h2>{{ user.id ? 'Edit Employee' : 'Create Employee' }}</h2>
+          <h2>{{ user.id ? 'Edit User' : 'Create User' }}</h2>
           <p>
-            {{
-              user.id
-                ? 'Update the employee information below.'
-                : 'Create a new employee account.'
-            }}
+            {{ user.id
+              ? 'Update the selected user.'
+              : 'Enter the details for a new user.' }}
           </p>
         </div>
       </div>
@@ -57,91 +83,89 @@
       <form @submit.prevent="saveUser">
         <div class="form-grid">
           <div class="field">
-            <label for="username">Username</label>
+            <label>Username</label>
             <input
-              id="username"
               v-model="user.username"
               type="text"
-              placeholder="Enter username"
+              placeholder="Username"
               required
             />
           </div>
 
           <div class="field">
-            <label for="email">Email address</label>
+            <label>Email</label>
             <input
-              id="email"
               v-model="user.email"
               type="email"
-              placeholder="employee@example.com"
+              placeholder="Email address"
               required
             />
           </div>
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="primary-button">
+          <button class="primary-button" type="submit">
             {{ user.id ? 'Save Changes' : 'Create User' }}
+          </button>
+
+          <button
+            v-if="user.id"
+            type="button"
+            class="secondary-button"
+            @click="resetForm"
+          >
+            Cancel Editing
           </button>
         </div>
       </form>
     </div>
 
-    <div v-if="user.id" class="card profile-card">
+    <!-- SELECTED USER -->
+    <div v-if="user.id" class="card">
       <div class="card-header">
-        <div class="profile-avatar">
-          {{ user.username.charAt(0).toUpperCase() }}
-        </div>
-
+        <div class="section-icon">📋</div>
         <div>
-          <h2>Current User</h2>
-          <p>Employee information currently loaded.</p>
+          <h2>Selected User</h2>
+          <p>Account details</p>
         </div>
       </div>
 
       <div class="profile-details">
         <div class="detail">
-          <span class="detail-label">User ID</span>
+          <span>User ID</span>
           <strong>#{{ user.id }}</strong>
         </div>
 
         <div class="detail">
-          <span class="detail-label">Username</span>
+          <span>Username</span>
           <strong>{{ user.username }}</strong>
         </div>
 
         <div class="detail">
-          <span class="detail-label">Email</span>
+          <span>Email</span>
           <strong>{{ user.email }}</strong>
         </div>
       </div>
 
       <div class="danger-zone">
         <div>
-          <strong>Delete employee</strong>
+          <strong>Delete User</strong>
           <p>This action cannot be undone.</p>
         </div>
 
-        <button
-          type="button"
-          class="delete-button"
-          @click="deleteUser"
-        >
+        <button class="delete-button" @click="deleteUser">
           Delete User
         </button>
       </div>
     </div>
 
-    <div
+    <p
       v-if="message"
       class="message"
-      :class="{
-        success: message.toLowerCase().includes('successfully'),
-        error: message.toLowerCase().includes('error')
-      }"
+      :class="{ error: isError }"
     >
-      <span>{{ message }}</span>
-    </div>
+      {{ message }}
+    </p>
   </div>
 </template>
 
@@ -153,108 +177,157 @@ export default {
 
   data() {
     return {
-      userId: '',
+      users: [],
+      search: '',
+      loading: false,
+      message: '',
+      isError: false,
       user: {
         id: null,
         username: '',
         email: ''
-      },
-      message: ''
+      }
     }
   },
 
-  methods: {
-    async createUser() {
-      try {
-        const response = await api.post(
-          '/users',
-          {
-            username: this.user.username,
-            email: this.user.email
-          }
-        )
+  computed: {
+    filteredUsers() {
+      const query = this.search.trim().toLowerCase()
 
-        this.user = response.data.data
-        this.userId = this.user.id
-        this.message = 'User created successfully!'
+      return this.users.filter(employee =>
+        String(employee.id).includes(query) ||
+        (employee.username || '').toLowerCase().includes(query) ||
+        (employee.email || '').toLowerCase().includes(query)
+      )
+    }
+  },
+
+  mounted() {
+    this.loadUsers()
+  },
+
+  methods: {
+    errorMessage(error, fallback) {
+      return error.response?.data?.message ||
+        error.response?.data?.errors?.detail ||
+        error.message ||
+        fallback
+    },
+
+    async loadUsers() {
+      this.loading = true
+
+      try {
+        const response = await api.get('/users', {
+          withCredentials: true
+        })
+
+        const data = response.data.data ?? response.data
+        this.users = Array.isArray(data) ? data : []
+        this.isError = false
+        this.message = ''
       } catch (error) {
         console.error(error)
-
-        this.message =
-          error.response?.data?.message ||
-          error.message ||
-          'Error creating user.'
+        this.isError = true
+        this.message = this.errorMessage(
+          error,
+          'Error loading users.'
+        )
+      } finally {
+        this.loading = false
       }
     },
 
-    async getUser(id) {
-      if (!id) {
-        this.message = 'Please enter a user ID.'
-        return
+    selectUser(employee) {
+      this.user = {
+        id: employee.id,
+        username: employee.username || '',
+        email: employee.email || ''
       }
 
-      try {
-        const response = await api.get(
-          `/users/${id}`
-        )
+      this.message = ''
+    },
 
-        this.user = response.data.data
-        this.userId = this.user.id
-        this.message = 'User loaded successfully!'
+    resetForm() {
+      this.user = {
+        id: null,
+        username: '',
+        email: ''
+      }
+      this.message = ''
+    },
+
+    async createUser() {
+      try {
+        await api.post('/users', {
+          username: this.user.username,
+          email: this.user.email
+        }, {
+          withCredentials: true
+        })
+
+        this.resetForm()
+        await this.loadUsers()
+        this.isError = false
+        this.message = 'User created successfully!'
       } catch (error) {
         console.error(error)
-
-        this.message =
-          error.response?.data?.message ||
-          error.message ||
-          'Error getting user.'
+        this.isError = true
+        this.message = this.errorMessage(
+          error,
+          'Error creating user.'
+        )
       }
     },
 
     async updateUser() {
       try {
-        const response = await api.patch(
-          `/users/${this.user.id}`,
-          {
-            username: this.user.username,
-            email: this.user.email
-          }
-        )
+        await api.patch(`/users/${this.user.id}`, {
+          username: this.user.username,
+          email: this.user.email
+        }, {
+          withCredentials: true
+        })
 
-        this.user = response.data.data
-        this.userId = this.user.id
+        this.resetForm()
+        await this.loadUsers()
+        this.isError = false
         this.message = 'User updated successfully!'
       } catch (error) {
         console.error(error)
-
-        this.message =
-          error.response?.data?.message ||
-          error.message ||
+        this.isError = true
+        this.message = this.errorMessage(
+          error,
           'Error updating user.'
+        )
       }
     },
 
     async deleteUser() {
+      if (!this.user.id) return
+
+      const confirmed = window.confirm(
+        `Delete ${this.user.username}? This cannot be undone.`
+      )
+
+      if (!confirmed) return
+
       try {
-        await api.delete(
-          `/users/${this.user.id}`
-        )
+        await api.delete(`/users/${this.user.id}`, {
+          withCredentials: true
+        })
 
-        this.user = {
-          id: null,
-          username: '',
-          email: ''
-        }
-
-        this.userId = ''
+        this.resetForm()
+        await this.loadUsers()
+        this.isError = false
         this.message = 'User deleted successfully!'
       } catch (error) {
         console.error(error)
-
-        this.message =
-          error.response?.data?.message ||
-          error.message ||
+        this.isError = true
+        this.message = this.errorMessage(
+          error,
           'Error deleting user.'
+        )
       }
     },
 
@@ -271,8 +344,10 @@ export default {
 
 <style scoped>
 .user-page {
-  max-width: 950px;
+  max-width: 1050px;
   margin: 0 auto;
+  padding: 20px;
+  color: #111827;
 }
 
 .page-heading {
@@ -281,100 +356,147 @@ export default {
 
 .eyebrow {
   display: block;
-  margin-bottom: 6px;
   color: #2563eb;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
 }
 
 .page-heading h1 {
   margin: 0;
-  color: #111827;
   font-size: 30px;
-  font-weight: 700;
 }
 
 .page-heading p {
-  margin: 7px 0 0;
   color: #6b7280;
   font-size: 14px;
 }
 
 .card {
-  margin-bottom: 20px;
-  padding: 26px;
-  background: #ffffff;
+  background: white;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
+  padding: 26px;
+  margin-bottom: 20px;
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
   margin-bottom: 24px;
 }
 
 .card-header h2 {
   margin: 0;
-  color: #111827;
-  font-size: 18px;
+  font-size: 19px;
 }
 
 .card-header p {
-  margin: 4px 0 0;
+  margin: 5px 0 0;
   color: #6b7280;
   font-size: 13px;
 }
 
 .section-icon {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 11px;
+  border-radius: 12px;
   background: #eff6ff;
-  font-size: 18px;
+  font-size: 21px;
 }
 
-.load-form {
+.toolbar {
   display: flex;
-  align-items: flex-end;
-  gap: 14px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  flex: 1;
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 14px;
+  background: #f9fafb;
+  color: #111827;
 }
 
-.field label {
-  color: #374151;
-  font-size: 13px;
+input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.primary-button {
+  border: none;
+  background: #2563eb;
+  color: white;
+  border-radius: 9px;
+  padding: 12px 19px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.primary-button:hover {
+  background: #1d4ed8;
+}
+
+.secondary-button {
+  border: 1px solid #d1d5db;
+  background: white;
+  padding: 12px 19px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #f8fafc;
+  color: #6b7280;
+  text-align: left;
+  font-size: 12px;
+  padding: 15px;
+}
+
+td {
+  padding: 15px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+tr:hover td {
+  background: #f8fafc;
+}
+
+.edit-button {
+  border: none;
+  border-radius: 7px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 8px 15px;
+  cursor: pointer;
   font-weight: 600;
 }
 
-.field input {
-  width: 100%;
-  padding: 11px 13px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #f9fafb;
-  color: #111827;
-  font-size: 14px;
-  transition: 0.2s ease;
-}
-
-.field input:focus {
-  outline: none;
-  background: #ffffff;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 30px;
 }
 
 .form-grid {
@@ -383,41 +505,21 @@ export default {
   gap: 20px;
 }
 
-.primary-button {
-  border: none;
-  border-radius: 8px;
-  padding: 11px 18px;
-  background: #2563eb;
-  color: white;
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
   font-size: 13px;
   font-weight: 600;
-  transition: 0.2s ease;
-}
-
-.primary-button:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-}
-
-.load-button {
-  white-space: nowrap;
 }
 
 .form-actions {
-  margin-top: 22px;
-}
-
-.profile-avatar {
-  width: 42px;
-  height: 42px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #dbeafe;
-  color: #2563eb;
-  font-size: 17px;
-  font-weight: 700;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .profile-details {
@@ -427,81 +529,57 @@ export default {
 }
 
 .detail {
-  padding: 17px;
+  background: #f8fafc;
+  padding: 18px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  background: #f8fafc;
 }
 
-.detail-label {
+.detail span {
   display: block;
-  margin-bottom: 6px;
   color: #6b7280;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .detail strong {
-  color: #111827;
   font-size: 14px;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .danger-zone {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  margin-top: 22px;
-  padding-top: 20px;
+  margin-top: 25px;
   border-top: 1px solid #e5e7eb;
-}
-
-.danger-zone strong {
-  color: #374151;
-  font-size: 13px;
+  padding-top: 22px;
 }
 
 .danger-zone p {
-  margin: 4px 0 0;
   color: #9ca3af;
   font-size: 12px;
 }
 
 .delete-button {
   border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
   background: #fee2e2;
   color: #dc2626;
-  font-size: 13px;
+  border-radius: 8px;
+  padding: 11px 18px;
+  cursor: pointer;
   font-weight: 600;
-  transition: 0.2s ease;
-}
-
-.delete-button:hover {
-  background: #dc2626;
-  color: white;
 }
 
 .message {
-  margin-bottom: 20px;
-  padding: 13px 16px;
+  padding: 14px;
   border-radius: 9px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.message.success {
-  border: 1px solid #bbf7d0;
   background: #f0fdf4;
   color: #15803d;
+  font-size: 14px;
 }
 
 .message.error {
-  border: 1px solid #fecaca;
   background: #fef2f2;
   color: #dc2626;
 }
@@ -512,18 +590,10 @@ export default {
     grid-template-columns: 1fr;
   }
 
-  .load-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .load-button {
-    width: 100%;
-  }
-
+  .toolbar,
   .danger-zone {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 }
 </style>
