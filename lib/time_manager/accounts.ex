@@ -22,19 +22,33 @@ defmodule TimeManager.Accounts do
       {:error, :invalid_credentials}
 
     user ->
-      bcrypt_valid =
-        is_binary(user.password_hash) and
-          Bcrypt.verify_pass(password, user.password_hash)
+      password_valid =
+        valid_password?(password, user.password_hash) or
+          valid_password?(password, user.hashed_password)
 
-      argon2_valid =
-        is_binary(user.hashed_password) and
-          Argon2.verify_pass(password, user.hashed_password)
-
-      if bcrypt_valid or argon2_valid do
+      if password_valid do
         {:ok, Repo.preload(user, :role)}
       else
         {:error, :invalid_credentials}
       end
   end
 end
+
+  defp valid_password?(_password, nil), do: false
+
+  defp valid_password?(password, hash) when is_binary(hash) do
+    cond do
+      String.starts_with?(hash, "$argon2") ->
+        Argon2.verify_pass(password, hash)
+
+      String.starts_with?(hash, ["$2a$", "$2b$", "$2y$"]) ->
+        Bcrypt.verify_pass(password, hash)
+
+      true ->
+        false
+    end
+  end
+
+  defp valid_password?(_password, _hash), do: false
+
 end

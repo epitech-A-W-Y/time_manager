@@ -1,54 +1,80 @@
-
 defmodule TimeManagerWeb.ClockController do
   use TimeManagerWeb, :controller
 
   alias TimeManager.Clocks
-  alias TimeManager.Clock
+  alias TimeManager.Users
+  alias TimeManager.Accounts.Role
 
   def index(conn, %{"user_id" => user_id}) do
     current_user = conn.assigns.current_user
 
-    if can_view_user?(current_user, user_id) do
-      clocks = Clocks.list_clocks(user_id)
-      render(conn, :index, clocks: clocks)
-    else
-      forbidden(conn)
+    cond do
+      not can_view_user?(current_user, user_id) ->
+        forbidden(conn)
+
+      is_nil(Users.get_user(user_id)) ->
+        send_resp(conn, :not_found, "")
+
+      true ->
+        clocks = Clocks.list_clocks(user_id)
+        render(conn, :index, clocks: clocks)
     end
   end
 
-  def create(conn, %{"user_id" => user_id, "clock" => clock_params}) do
+  def create(conn, %{"user_id" => user_id}) do
     current_user = conn.assigns.current_user
 
-    # Only admins can create clock records for other users.
-    if can_modify_user?(current_user, user_id) do
-      clock_params = Map.put(clock_params, "user_id", user_id)
+    cond do
+      not can_modify_user?(current_user, user_id) ->
+        forbidden(conn)
 
-      with {:ok, %Clock{} = clock} <-
-             Clocks.create_clock(clock_params) do
-        conn
-        |> put_status(:created)
-        |> render(:show, clock: clock)
-      end
-    else
-      forbidden(conn)
+      is_nil(Users.get_user(user_id)) ->
+        send_resp(conn, :not_found, "")
+
+      true ->
+        clocks = Clocks.list_clocks(user_id)
+
+        status =
+          case List.last(clocks) do
+            nil -> true
+            last_clock -> !last_clock.status
+          end
+
+        attrs = %{
+          "time" => DateTime.utc_now(),
+          "status" => status,
+          "user_id" => user_id
+        }
+
+        case Clocks.create_clock(attrs) do
+          {:ok, clock} ->
+            conn
+            |> put_status(:created)
+            |> render(:show, clock: clock)
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(TimeManagerWeb.ChangesetJSON, :error,
+              changeset: changeset
+            )
+        end
     end
   end
 
   defp can_view_user?(user, user_id) do
-    role = role_label(user)
-
-    role in ["admin", "manager"] or
-      to_string(user.id) == user_id
+    role_label(user) in ["admin", "manager"] or
+      to_string(user.id) == to_string(user_id)
   end
 
   defp can_modify_user?(user, user_id) do
     role_label(user) == "admin" or
-      to_string(user.id) == user_id
+      to_string(user.id) == to_string(user_id)
   end
 
   defp role_label(user) do
     case user.role do
-      %TimeManager.Accounts.Role{label: label} ->
+      %Role{label: label} ->
         String.downcase(label || "")
 
       _ ->
@@ -62,4 +88,3 @@ defmodule TimeManagerWeb.ClockController do
     |> json(%{error: "You do not have permission to access this user's clocks"})
   end
 end
-

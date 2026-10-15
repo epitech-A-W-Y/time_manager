@@ -5,8 +5,8 @@ defmodule TimeManagerWeb.UserController do
   alias TimeManager.User
 alias TimeManager.Accounts
 alias TimeManager.Auth.Token
-  def index(conn, _params) do
-    users = Users.list_users()
+  def index(conn, params) do
+    users = Users.list_users(params)
     render(conn, :index, users: users)
   end
 

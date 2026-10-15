@@ -9,6 +9,11 @@ import ChartManager from '../components/ChartManager.vue'
 import SignIn from '../components/SignIn.vue'
 import SignUp from '../components/SignUp.vue'
 import RoleDashboard from '../components/RoleDashboard.vue'
+import Communication from '../components/Communication.vue'
+import Employee from '../components/Employee.vue'
+import Manager from '../components/Manager.vue'
+import Administrator from '../components/Administrator.vue'
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -47,6 +52,34 @@ const router = createRouter({
       path: '/admin',
       name: 'AdminDashboard',
       component: RoleDashboard,
+      meta: { requiresAuth: true, roles: ['admin'] }
+    },
+    {
+      path: '/administrator',
+      redirect: '/admin'
+    },
+    {
+      path: '/communication',
+      name: 'Communication',
+      component: Communication,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/legacy-employee',
+      name: 'LegacyEmployee',
+      component: Employee,
+      meta: { requiresAuth: true, roles: ['employee'] }
+    },
+    {
+      path: '/legacy-manager',
+      name: 'LegacyManager',
+      component: Manager,
+      meta: { requiresAuth: true, roles: ['manager'] }
+    },
+    {
+      path: '/legacy-administrator',
+      name: 'LegacyAdministrator',
+      component: Administrator,
       meta: { requiresAuth: true, roles: ['admin'] }
     },
     {
