@@ -1,21 +1,31 @@
-import { fileURLToPath, URL } from 'node:url'
 
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
+
+const cordovaScript = {
+  name: 'cordova-script',
+  transformIndexHtml(html) {
+    return html.replace(
+      '<head>',
+      '<head>\n    <script src="cordova.js"></script>'
+    )
+  },
+}
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    vueDevTools(),
-  ],
-
+  base: './',
+  plugins: [vue(), cordovaScript],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-
+  build: {
+    target: 'chrome66',
+    outDir: '../mobile/app/www',
+    emptyOutDir: true,
+  },
   server: {
     proxy: {
       '/api': {

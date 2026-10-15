@@ -1,5 +1,7 @@
-import { createRouter, createWebHistory } from 'vue-router'
 
+import { createRouter, createWebHashHistory } from 'vue-router'
+
+import Auth from '../components/Auth.vue'
 import Communication from '../components/Communication.vue'
 import Employee from '../components/Employee.vue'
 import Manager from '../components/Manager.vue'
@@ -8,7 +10,11 @@ import Administrator from '../components/Administrator.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/employee'
+    redirect: '/login'
+  },
+  {
+    path: '/login',
+    component: Auth
   },
   {
     path: '/employee',
@@ -29,7 +35,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes
 })
 

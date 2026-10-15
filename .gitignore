@@ -35,3 +35,21 @@ time_manager-*.tar
 npm-debug.log
 /assets/node_modules/
 
+
+# Frontend dependencies and backup files
+frontend/node_modules/
+frontend/node_modules_backup/
+frontend/package-lock.backup.json
+frontend/vite.config.js.backup
+
+# Cordova generated files
+mobile/app/platforms/
+mobile/app/plugins/
+mobile/app/node_modules/
+
+# Ignore generated mobile dependencies and local Android files
+mobile/app/platforms/
+mobile/app/plugins/
+mobile/app/node_modules/
+mobile/app/local.properties
+mobile/app/licenses/

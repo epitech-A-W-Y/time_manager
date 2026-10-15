@@ -1,4 +1,3 @@
-
 defmodule TimeManager.User do
   use Ecto.Schema
   import Ecto.Changeset
@@ -8,6 +7,7 @@ defmodule TimeManager.User do
     field :email, :string
     field :password_hash, :string
     field :password, :string, virtual: true, redact: true
+    field :role, :string, default: "employee"
 
     timestamps(type: :utc_datetime)
   end
@@ -15,15 +15,18 @@ defmodule TimeManager.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:username, :email, :password])
+    |> cast(attrs, [:username, :email, :password, :role])
     |> validate_required([:username, :email])
     |> validate_format(:email, ~r/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
     |> validate_length(:password, min: 8)
+    |> validate_inclusion(:role, ["employee", "manager", "administrator"])
     |> hash_password()
     |> unique_constraint(:email)
   end
 
-  defp hash_password(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
+  defp hash_password(
+         %Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset
+       ) do
     put_change(changeset, :password_hash, Argon2.hash_pwd_salt(password))
   end
 
